@@ -1,17 +1,43 @@
-﻿using System.Net.Http.Headers;
+﻿using Newtonsoft.Json;
 
-using HttpClient client = new();
-client.DefaultRequestHeaders.Accept.Clear();
-client.DefaultRequestHeaders.Accept.Add(
-    new MediaTypeWithQualityHeaderValue("application/vnd.github.v3+json"));
-client.DefaultRequestHeaders.Add("User-Agent", ".NET Foundation Repository Reporter");
-
-await ProcessRepositoriesAsync(client);
-
-static async Task ProcessRepositoriesAsync(HttpClient client)
+namespace BlizzardGameData
 {
-    var json = await client.GetStringAsync(
-         "https://api.github.com/orgs/dotnet/repos");
+    class Engine
+    {
+        static void Main(string[] args)
+        {
+            using (StreamReader r = new StreamReader("Realms.US.json"))
+            {
+                string json = r.ReadToEnd();
+                dynamic jsonResult = JsonConvert.DeserializeObject<dynamic>(json);
+                var realms = JsonConvert.DeserializeObject<dynamic>(jsonResult.results.ToString());
+                Console.WriteLine(realms[0]); 
+            }
+        }
+    }
 
-    Console.Write(json);
+    internal class RealmRoot
+    {
+        public int page { get; set; }
+        public int pageSize { get; set; }
+        public int maxPageSize { get; set; }
+        public int pageCount { get; set; }
+        Result results { get; set; }
+    }
+
+    internal class Result
+    {
+        public List<Results> results { get; set; }
+    }
+
+    internal class Results
+    {
+        public Key key { get; set; }
+        public Realm data { get; set; }
+    }
+
+    internal class Key
+    {
+        public string href { get; set; }
+    }
 }
